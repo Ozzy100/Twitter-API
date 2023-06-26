@@ -23,7 +23,7 @@ try:
 except Exception as e:
     print('Failed authentication:', str(e))
 
-api.get_user(screen_name='Ozzy_the_4th')
+
 me = api.verify_credentials()  # Store user as a variable
 
 data = {
@@ -33,14 +33,14 @@ data = {
     'statuses_count': me.statuses_count
 }
 
-stories_df = pd.DataFrame(data, index=[0])
+twitter_df = pd.DataFrame(data, index=[0])
 
 # Create the engine object
-engine = db.create_engine('sqlite:///stories_df.db')
+engine = db.create_engine('sqlite:///twitter_df.db')
 
 # Send DataFrame to SQL table
-stories_df.to_sql('top_stories', con=engine, if_exists='replace', index=False)
+twitter_df.to_sql('tweet', con=engine, if_exists='replace', index=False)
 
 with engine.connect() as connection:
-    query_result = connection.execute(db.text("SELECT * FROM top_stories;")).fetchall()
+    query_result = connection.execute(db.text("SELECT * FROM tweet;")).fetchall()
     print(pd.DataFrame(query_result))

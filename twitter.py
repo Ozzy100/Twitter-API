@@ -1,37 +1,46 @@
 import os
 import tweepy
 from dotenv import load_dotenv
+import pandas as pd
+import sqlalchemy as db
 
-consumer_key = os.environ["TWITTER_API_KEY"]
-consumer_secret = os.environ["TWITTER_API_KEY_SECRET"]
-access_token = os.environ["TWITTER_TOKEN"]
-access_token_secret = os.environ["TWITTER_TOKEN_SECRET"]
+# Load environment variables
+load_dotenv()
 
-auth = tweepy.OAuthHandler(consumer_key,consumer_secret)
-auth.set_access_token(access_token,access_token_secret)
- 
+consumer_key = os.environ.get("TWITTER_API_KEY")
+consumer_secret = os.environ.get("TWITTER_API_KEY_SECRET")
+access_token = os.environ.get("TWITTER_TOKEN")
+access_token_secret = os.environ.get("TWITTER_TOKEN_SECRET")
+
+auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_token_secret)
+
 api = tweepy.API(auth)
- 
+
 try:
     api.verify_credentials()
     print('Successful Authentication')
-except:
-    print('Failed authentication')
+except Exception as e:
+    print('Failed authentication:', str(e))
 
-me = api.verify_credentials() # Store user as a variable
- 
-data = me.json()
+api.get_user(screen_name='Ozzy_the_4th')
+me = api.verify_credentials()  # Store user as a variable
 
-print(data)
+data = {
+    'screen_name': me.screen_name,
+    'followers_count': me.followers_count,
+    'listed_count': me.listed_count,
+    'statuses_count': me.statuses_count
+}
 
+stories_df = pd.DataFrame(data, index=[0])
 
-# Get user Twitter statistics
-print(f"my.followers_count: {me.followers_count}")
-print(f"my.listed_count: {me.listed_count}")
-print(f"my.statuses_count: {me.statuses_count}")
+# Create the engine object
+engine = db.create_engine('sqlite:///stories_df.db')
 
+# Send DataFrame to SQL table
+stories_df.to_sql('top_stories', con=engine, if_exists='replace', index=False)
 
-
-
-print(me.followers_count)
-
+with engine.connect() as connection:
+    query_result = connection.execute(db.text("SELECT * FROM top_stories;")).fetchall()
+    print(pd.DataFrame(query_result))

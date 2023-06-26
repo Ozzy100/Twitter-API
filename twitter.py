@@ -41,5 +41,7 @@ engine = db.create_engine('sqlite:///twitter_df.db')
 twitter_df.to_sql('tweet', con=engine, if_exists='replace', index=False)
 
 with engine.connect() as connection:
-    query_result = connection.execute(db.text("SELECT * FROM tweet;")).fetchall()
+    query_result = connection.execute(
+        db.text("SELECT * FROM tweet;")
+    ).fetchall()
     print(pd.DataFrame(query_result))

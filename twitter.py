@@ -23,7 +23,6 @@ try:
 except Exception as e:
     print('Failed authentication:', str(e))
 
-
 me = api.verify_credentials()  # Store user as a variable
 
 data = {
